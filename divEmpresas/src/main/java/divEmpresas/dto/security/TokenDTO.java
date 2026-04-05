@@ -1,4 +1,5 @@
 package divEmpresas.dto.security;
 
-public record TokenDTO() {
-}
+public record TokenDTO(
+        String token
+) {}
