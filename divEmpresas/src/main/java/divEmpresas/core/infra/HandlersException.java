@@ -1,6 +1,6 @@
 package divEmpresas.core.infra;
 
-import divEmpresas.core.exceptions.EmailNaoEncontradoException;
+import divEmpresas.core.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,5 +38,42 @@ public class HandlersException {
     {
         MessageRestError messageRestError = new MessageRestError();
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageRestError);
+    }
+
+    @ExceptionHandler(NaoPertenceAOrganizacaoException.class)
+    public ResponseEntity<MessageRestError> NaoPertenceAOrganizacaoException(NaoPertenceAOrganizacaoException ex)
+    {
+        MessageRestError messageRestError = new MessageRestError(HttpStatus.BAD_REQUEST,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageRestError);
+    }
+
+    @ExceptionHandler(OrganizacaoNaoExistenteException.class)
+    public ResponseEntity<MessageRestError> OrganizacaoNaoExistenteException(OrganizacaoNaoExistenteException ex)
+    {
+        MessageRestError messageRestError = new MessageRestError(HttpStatus.NOT_FOUND,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageRestError);
+    }
+
+    //-------------- EXCEÇÕES TOKEN --------------
+
+    @ExceptionHandler(CriacaoTokenException.class)
+    public ResponseEntity<MessageRestError> CriacaoTokenException(CriacaoTokenException ex)
+    {
+        MessageRestError messageRestError = new MessageRestError(HttpStatus.UNAUTHORIZED,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(messageRestError);
+    }
+
+    @ExceptionHandler(ValidacaoTokenException.class)
+    public ResponseEntity<MessageRestError> ValidacaoTokenException(ValidacaoTokenException ex)
+    {
+        MessageRestError messageRestError = new MessageRestError(HttpStatus.UNAUTHORIZED,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(messageRestError);
+    }
+
+    @ExceptionHandler(TokenExpiradoException.class)
+    public ResponseEntity<MessageRestError> TokenExpiradoException(TokenExpiradoException ex)
+    {
+        MessageRestError messageRestError = new MessageRestError(HttpStatus.UNAUTHORIZED,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(messageRestError);
     }
 }
