@@ -4,8 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import divEmpresas.core.exceptions.CriacaoTokenException;
-import divEmpresas.core.exceptions.ValidacaoTokenException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import divEmpresas.core.exceptions.security.CriacaoTokenException;
+import divEmpresas.core.exceptions.security.TokenExpiradoException;
+import divEmpresas.core.exceptions.security.TokenInvalidoException;
 import divEmpresas.entity.Usuario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -51,9 +53,13 @@ public class TokenService {
                     .getSubject();
 
         }
+        catch (TokenExpiredException ex)
+        {
+            throw new TokenExpiradoException("Token expirado");
+        }
         catch (JWTVerificationException ex)
         {
-            throw new ValidacaoTokenException();
+            throw new TokenInvalidoException("Token inválido");
         }
     }
 

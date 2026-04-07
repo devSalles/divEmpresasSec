@@ -1,6 +1,10 @@
 package divEmpresas.core.infra;
 
 import divEmpresas.core.exceptions.*;
+import divEmpresas.core.exceptions.security.CriacaoTokenException;
+import divEmpresas.core.exceptions.security.AcessoNegadoException;
+import divEmpresas.core.exceptions.security.TokenExpiradoException;
+import divEmpresas.core.exceptions.security.TokenInvalidoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -40,15 +44,15 @@ public class HandlersException {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageRestError);
     }
 
-    @ExceptionHandler(NaoPertenceAOrganizacaoException.class)
-    public ResponseEntity<MessageRestError> NaoPertenceAOrganizacaoException(NaoPertenceAOrganizacaoException ex)
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<MessageRestError> NaoPertenceAOrganizacaoException(AcessoNegadoException ex)
     {
         MessageRestError messageRestError = new MessageRestError(HttpStatus.BAD_REQUEST,ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageRestError);
     }
 
-    @ExceptionHandler(OrganizacaoNaoExistenteException.class)
-    public ResponseEntity<MessageRestError> OrganizacaoNaoExistenteException(OrganizacaoNaoExistenteException ex)
+    @ExceptionHandler(OrganizacaoNaoEncontradaException.class)
+    public ResponseEntity<MessageRestError> OrganizacaoNaoExistenteException(OrganizacaoNaoEncontradaException ex)
     {
         MessageRestError messageRestError = new MessageRestError(HttpStatus.NOT_FOUND,ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageRestError);
@@ -63,8 +67,8 @@ public class HandlersException {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(messageRestError);
     }
 
-    @ExceptionHandler(ValidacaoTokenException.class)
-    public ResponseEntity<MessageRestError> ValidacaoTokenException(ValidacaoTokenException ex)
+    @ExceptionHandler(TokenInvalidoException.class)
+    public ResponseEntity<MessageRestError> TokenInvalidoException(TokenInvalidoException ex)
     {
         MessageRestError messageRestError = new MessageRestError(HttpStatus.UNAUTHORIZED,ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(messageRestError);

@@ -1,4 +1,4 @@
-package divEmpresas.core.exceptions;
+package divEmpresas.core.exceptions.security;
 
 public class CriacaoTokenException extends RuntimeException {
     public CriacaoTokenException(String message) {

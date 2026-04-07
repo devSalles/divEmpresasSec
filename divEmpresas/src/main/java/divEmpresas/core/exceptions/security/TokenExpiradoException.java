@@ -1,4 +1,4 @@
-package divEmpresas.core.exceptions;
+package divEmpresas.core.exceptions.security;
 
 public class TokenExpiradoException extends RuntimeException {
     public TokenExpiradoException(String message) {

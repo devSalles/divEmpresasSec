@@ -1,9 +1,7 @@
 package divEmpresas.service;
 
-import divEmpresas.core.exceptions.EmailNaoEncontradoException;
-import divEmpresas.core.exceptions.GerenteNaoEncontradoException;
-import divEmpresas.core.exceptions.NaoPertenceAOrganizacaoException;
-import divEmpresas.core.exceptions.OrganizacaoNaoExistenteException;
+import divEmpresas.core.exceptions.*;
+import divEmpresas.core.exceptions.security.AcessoNegadoException;
 import divEmpresas.dto.user.UsuarioRequestDTO;
 import divEmpresas.dto.user.UsuarioResponseDTO;
 import divEmpresas.entity.Organizacao;
@@ -16,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class UserService implements UserDetailsService {
     public UsuarioResponseDTO salvarUsuario(UsuarioRequestDTO userDTO)
     {
         String senhaCriptografada = passwordEncoder.encode(userDTO.senha());
-        Organizacao organizacao = this.organizacaoRepository.findById(userDTO.idOrganizacao()).orElseThrow(OrganizacaoNaoExistenteException::new);
+        Organizacao organizacao = this.organizacaoRepository.findById(userDTO.idOrganizacao()).orElseThrow(OrganizacaoNaoEncontradaException::new);
 
         Usuario usuario = userDTO.toUsuario(organizacao);
         usuario.setSenha(senhaCriptografada);
@@ -44,10 +44,53 @@ public class UserService implements UserDetailsService {
 
             if(!gerente.getOrganizacao().getId().equals(organizacao.getId()))
             {
-                throw new NaoPertenceAOrganizacaoException();
+                throw new AcessoNegadoException("Não pode cadastrar usuários em outra empresa");
             }
         }
 
         return UsuarioResponseDTO.fromUsuario(usuario);
+    }
+
+    public UsuarioResponseDTO buscarPorId(Long id,Usuario usuarioLogado)
+    {
+        Usuario usuario = this.usuarioRepository.findById(id).orElseThrow(IdNaoEncontradoException::new);
+
+        if(!usuario.getOrganizacao().getId().equals(usuarioLogado.getOrganizacao().getId()))
+        {
+            throw new AcessoNegadoException("Acesso negado");
+        }
+
+        switch (usuarioLogado.getRole())
+        {
+            case ADMIN:
+                return UsuarioResponseDTO.fromUsuario(usuario);
+
+            case MANAGER:
+                if(usuario.getManager().getId().equals(usuarioLogado.getId()) ||
+                usuario.getId().equals(usuarioLogado.getId()))
+                {
+                    return UsuarioResponseDTO.fromUsuario(usuario);
+                }
+            break;
+
+            case USER:
+                if(usuario.getId().equals(usuarioLogado.getId()))
+                {
+                    return UsuarioResponseDTO.fromUsuario(usuario);
+                }
+            break;
+        }
+
+        throw new AcessoNegadoException("Acesso negado");
+    }
+
+    public List<UsuarioResponseDTO> listarTodos(Usuario usuarioLogado)
+    {
+        switch (usuarioLogado.getRole())
+        {
+            case MANAGER:
+                List<Usuario>usuarios = this.usuarioRepository.findByOrganizacaoId(usuarioLogado.getOrganizacao());
+                return 
+        }
     }
 }
