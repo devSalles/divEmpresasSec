@@ -88,9 +88,19 @@ public class UserService implements UserDetailsService {
     {
         switch (usuarioLogado.getRole())
         {
+            case ADMIN:
+                List<Usuario>usuarios = this.usuarioRepository.findByOrganizacaoId(usuarioLogado.getOrganizacao().getId());
+                return usuarios.stream().map(UsuarioResponseDTO::fromUsuario).toList();
+
             case MANAGER:
-                List<Usuario>usuarios = this.usuarioRepository.findByOrganizacaoId(usuarioLogado.getOrganizacao());
-                return 
+                List<Usuario> usuarioManager = this.usuarioRepository.
+                        findByOrganizacaoIdAndManagerId(usuarioLogado.getOrganizacao().getId(),usuarioLogado.getId());
+                return usuarioManager.stream().map(UsuarioResponseDTO::fromUsuario).toList();
+
+            case USER:
+                return List.of(UsuarioResponseDTO.fromUsuario(usuarioLogado));
         }
+
+        throw new AcessoNegadoException("Acesso negado");
     }
 }
