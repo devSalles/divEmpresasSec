@@ -1,9 +1,9 @@
 package divEmpresas.service;
 
+import divEmpresas.Enum.Role;
 import divEmpresas.core.exceptions.*;
 import divEmpresas.core.exceptions.security.AcessoNegadoException;
-import divEmpresas.dto.user.UsuarioRequestDTO;
-import divEmpresas.dto.user.UsuarioResponseDTO;
+import divEmpresas.dto.user.*;
 import divEmpresas.entity.Organizacao;
 import divEmpresas.entity.Usuario;
 import divEmpresas.repository.OrganizacaoRepository;
@@ -51,9 +51,60 @@ public class UserService implements UserDetailsService {
         return UsuarioResponseDTO.fromUsuario(usuario);
     }
 
+    public UsuarioResponseDTO atualizarAdmin(Long id, UsuarioAdminUpdateDTO usuarioAdminDTO, Usuario usuarioLogado)
+    {
+        Usuario usuarioAlvo = buscarID(id);
+
+        if (usuarioLogado.getRole() != Role.ADMIN)
+        {
+            throw new AcessoNegadoException("Acesso negado");
+        }
+
+        usuarioAdminDTO.atualizar(usuarioAlvo);
+        String senhaCriptografada = passwordEncoder.encode(usuarioAdminDTO.senha());
+        usuarioAlvo.setSenha(senhaCriptografada);
+
+        this.usuarioRepository.save(usuarioAlvo);
+        return UsuarioResponseDTO.fromUsuario(usuarioAlvo);
+    }
+
+    public UsuarioResponseDTO atualizarGerente(Long id, UsuarioGerenteUpdateDTO gerenteDTO, Usuario usuarioLogado)
+    {
+        Usuario usuarioAlvo = buscarID(id);
+
+        if(usuarioLogado.getRole()!=Role.MANAGER)
+        {
+            throw new AcessoNegadoException("Acesso negado");
+        }
+
+        gerenteDTO.atualizar(usuarioAlvo);
+        String senhaCriptografada = passwordEncoder.encode(gerenteDTO.senha());
+        usuarioLogado.setSenha(senhaCriptografada);
+
+        this.usuarioRepository.save(usuarioAlvo);
+        return UsuarioResponseDTO.fromUsuario(usuarioAlvo);
+    }
+
+    public UsuarioResponseDTO atualizarUsuario(Long id, UsuarioUpdateRequestDTO usuarioDTO, Usuario usuarioLogado)
+    {
+        Usuario usuarioAlvo = buscarID(id);
+
+        if(!usuarioAlvo.getId().equals(usuarioLogado.getId()))
+        {
+            throw new AcessoNegadoException("Acesso negado");
+        }
+
+        usuarioDTO.atualizar(usuarioAlvo);
+        String senhaCriptografada = passwordEncoder.encode(usuarioDTO.senha());
+        usuarioAlvo.setSenha(senhaCriptografada);
+
+        this.usuarioRepository.save(usuarioAlvo);
+        return UsuarioResponseDTO.fromUsuario(usuarioAlvo);
+    }
+
     public UsuarioResponseDTO buscarPorId(Long id,Usuario usuarioLogado)
     {
-        Usuario usuario = this.usuarioRepository.findById(id).orElseThrow(IdNaoEncontradoException::new);
+        Usuario usuario = buscarID(id);
 
         if(!usuario.getOrganizacao().getId().equals(usuarioLogado.getOrganizacao().getId()))
         {
@@ -93,8 +144,8 @@ public class UserService implements UserDetailsService {
                 return usuarios.stream().map(UsuarioResponseDTO::fromUsuario).toList();
 
             case MANAGER:
-                List<Usuario> usuarioManager = this.usuarioRepository.
-                        findByOrganizacaoIdAndManagerId(usuarioLogado.getOrganizacao().getId(),usuarioLogado.getId());
+                List<Usuario> usuarioManager = this.usuarioRepository
+                        .findByOrganizacaoIdAndManagerId(usuarioLogado.getOrganizacao().getId(),usuarioLogado.getId());
                 return usuarioManager.stream().map(UsuarioResponseDTO::fromUsuario).toList();
 
             case USER:
@@ -102,5 +153,10 @@ public class UserService implements UserDetailsService {
         }
 
         throw new AcessoNegadoException("Acesso negado");
+    }
+
+    public Usuario buscarID(Long id)
+    {
+        return this.usuarioRepository.findById(id).orElseThrow(IdNaoEncontradoException::new);
     }
 }
