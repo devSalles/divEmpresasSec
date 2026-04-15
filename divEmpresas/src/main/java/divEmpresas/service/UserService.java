@@ -155,6 +155,33 @@ public class UserService implements UserDetailsService {
         throw new AcessoNegadoException("Acesso negado");
     }
 
+    public UsuarioResponseDTO deletarUsuario(Long id, Usuario usuarioLogado)
+    {
+        Usuario usuarioAlvo = buscarID(id);
+
+        if(usuarioLogado.getRole() != Role.ADMIN)
+        {
+            throw new RoleInvalidaException("Apenas usuários ADMIN podem excluir");
+        }
+
+        if(!usuarioAlvo.getOrganizacao().getId().equals(usuarioLogado.getOrganizacao().getId()))
+        {
+            throw new AcessoNegadoException("Usuário pertence a outra organização");
+        }
+
+        boolean contemSubordinados = this.usuarioRepository.existsByManagerId(usuarioAlvo.getId());
+
+        if(contemSubordinados)
+        {
+            throw new ContemSubordinadosException("Usuário possui subordinados");
+        }
+
+        this.usuarioRepository.delete(usuarioAlvo);
+        return UsuarioResponseDTO.fromUsuario(usuarioAlvo);
+    }
+
+    // ------------- METODO AUXILIAR -------------
+
     public Usuario buscarID(Long id)
     {
         return this.usuarioRepository.findById(id).orElseThrow(IdNaoEncontradoException::new);
