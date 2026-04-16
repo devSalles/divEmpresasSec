@@ -31,13 +31,12 @@ public class SecurityFilter extends OncePerRequestFilter {
             String email = this.tokenService.validateToken(token);
             if(email!=null)
             {
-                UserDetails user = this.usuarioRepository.
-                        findByEmail(email).orElseThrow(EmailNaoEncontradoException::new);
-                if(user!=null)
-                {
-                    var userNamePassword = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(userNamePassword);
-                }
+                UserDetails user = this.usuarioRepository
+                        .findByEmail(email).orElseThrow(EmailNaoEncontradoException::new);
+
+                var userNamePassword = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(userNamePassword);
+
             }
         }
 
