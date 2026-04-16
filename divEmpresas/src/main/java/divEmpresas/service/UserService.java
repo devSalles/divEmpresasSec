@@ -3,17 +3,25 @@ package divEmpresas.service;
 import divEmpresas.Enum.Role;
 import divEmpresas.core.exceptions.*;
 import divEmpresas.core.exceptions.security.AcessoNegadoException;
+import divEmpresas.core.exceptions.security.AutenticacaoException;
+import divEmpresas.core.security.TokenService;
+import divEmpresas.dto.security.LoginDTO;
+import divEmpresas.dto.security.TokenDTO;
 import divEmpresas.dto.user.*;
 import divEmpresas.entity.Organizacao;
 import divEmpresas.entity.Usuario;
 import divEmpresas.repository.OrganizacaoRepository;
 import divEmpresas.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ser.jackson.TokenBufferSerializer;
 
 import java.util.List;
 
@@ -24,6 +32,8 @@ public class UserService implements UserDetailsService {
     private final OrganizacaoRepository organizacaoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -49,6 +59,21 @@ public class UserService implements UserDetailsService {
         }
 
         return UsuarioResponseDTO.fromUsuario(usuario);
+    }
+
+    public TokenDTO login(LoginDTO loginDTO)
+    {
+        var userNamePassword = new UsernamePasswordAuthenticationToken(loginDTO.email(),loginDTO.senha());
+        Authentication auth = authenticationManager.authenticate(userNamePassword);
+
+        Object principal = auth.getPrincipal();
+        if(!(principal instanceof Usuario usuario))
+        {
+            throw new AutenticacaoException("Usuário não autenticado");
+        }
+
+        String token = tokenService.createToken(usuario);
+        return new TokenDTO(token);
     }
 
     public UsuarioResponseDTO atualizarAdmin(Long id, UsuarioAdminUpdateDTO usuarioAdminDTO, Usuario usuarioLogado)

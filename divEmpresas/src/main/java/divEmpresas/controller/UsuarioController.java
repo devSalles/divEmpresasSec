@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
 
     private final UserService userService;
-    private final TokenService tokenService;
 
     @PostMapping("/salvar-usuario")
     public ResponseEntity<?> salvarUser(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO)
@@ -30,6 +29,6 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO)
     {
-        return ResponseEntity.ok(this.tokenService.login(loginDTO));
+        return ResponseEntity.ok(this.userService.login(loginDTO));
     }
 }
