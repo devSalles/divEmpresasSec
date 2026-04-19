@@ -58,6 +58,7 @@ public class UserService implements UserDetailsService {
             }
         }
 
+        this.usuarioRepository.save(usuario);
         return UsuarioResponseDTO.fromUsuario(usuario);
     }
 
@@ -78,7 +79,7 @@ public class UserService implements UserDetailsService {
 
     public UsuarioResponseDTO atualizarAdmin(Long id, UsuarioAdminUpdateDTO usuarioAdminDTO, Usuario usuarioLogado)
     {
-        Usuario usuarioAlvo = buscarID(id);
+        Usuario usuarioAlvo = buscarID(id,usuarioLogado.getOrganizacao().getId());
 
         if (usuarioLogado.getRole() != Role.ADMIN)
         {
@@ -95,7 +96,7 @@ public class UserService implements UserDetailsService {
 
     public UsuarioResponseDTO atualizarGerente(Long id, UsuarioGerenteUpdateDTO gerenteDTO, Usuario usuarioLogado)
     {
-        Usuario usuarioAlvo = buscarID(id);
+        Usuario usuarioAlvo = buscarID(id,usuarioLogado.getOrganizacao().getId());
 
         if(usuarioLogado.getRole()!=Role.MANAGER)
         {
@@ -104,7 +105,7 @@ public class UserService implements UserDetailsService {
 
         gerenteDTO.atualizar(usuarioAlvo);
         String senhaCriptografada = passwordEncoder.encode(gerenteDTO.senha());
-        usuarioLogado.setSenha(senhaCriptografada);
+        usuarioAlvo.setSenha(senhaCriptografada);
 
         this.usuarioRepository.save(usuarioAlvo);
         return UsuarioResponseDTO.fromUsuario(usuarioAlvo);
@@ -112,7 +113,7 @@ public class UserService implements UserDetailsService {
 
     public UsuarioResponseDTO atualizarUsuario(Long id, UsuarioUpdateRequestDTO usuarioDTO, Usuario usuarioLogado)
     {
-        Usuario usuarioAlvo = buscarID(id);
+        Usuario usuarioAlvo = buscarID(id,usuarioLogado.getOrganizacao().getId());
 
         if(!usuarioAlvo.getId().equals(usuarioLogado.getId()))
         {
@@ -129,7 +130,7 @@ public class UserService implements UserDetailsService {
 
     public UsuarioResponseDTO buscarPorId(Long id,Usuario usuarioLogado)
     {
-        Usuario usuario = buscarID(id);
+        Usuario usuario = buscarID(id,usuarioLogado.getOrganizacao().getId());
 
         if(!usuario.getOrganizacao().getId().equals(usuarioLogado.getOrganizacao().getId()))
         {
@@ -182,7 +183,7 @@ public class UserService implements UserDetailsService {
 
     public UsuarioResponseDTO deletarUsuario(Long id, Usuario usuarioLogado)
     {
-        Usuario usuarioAlvo = buscarID(id);
+        Usuario usuarioAlvo = buscarID(id,usuarioLogado.getOrganizacao().getId());
 
         if(usuarioLogado.getRole() != Role.ADMIN)
         {
@@ -207,8 +208,8 @@ public class UserService implements UserDetailsService {
 
     // ------------- METODO AUXILIAR -------------
 
-    public Usuario buscarID(Long id)
+    public Usuario buscarID(Long id, Long idOrganizacao)
     {
-        return this.usuarioRepository.findById(id).orElseThrow(IdNaoEncontradoException::new);
+        return this.usuarioRepository.findByIdAndOrganizacaoId(id,idOrganizacao).orElseThrow(IdNaoEncontradoException::new);
     }
 }
