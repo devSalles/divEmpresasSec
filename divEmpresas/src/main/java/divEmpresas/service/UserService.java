@@ -32,8 +32,6 @@ public class UserService implements UserDetailsService {
     private final OrganizacaoRepository organizacaoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final TokenService tokenService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -44,6 +42,11 @@ public class UserService implements UserDetailsService {
     {
         String senhaCriptografada = passwordEncoder.encode(userDTO.senha());
         Organizacao organizacao = this.organizacaoRepository.findById(userDTO.idOrganizacao()).orElseThrow(OrganizacaoNaoEncontradaException::new);
+
+        if(userDTO.role()!=Role.ADMIN && userDTO.role() != Role.MANAGER)
+        {
+            throw new AcessoNegadoException("Você não tem nível de permissão");
+        }
 
         Usuario usuario = userDTO.toUsuario(organizacao);
         usuario.setSenha(senhaCriptografada);
@@ -60,21 +63,6 @@ public class UserService implements UserDetailsService {
 
         this.usuarioRepository.save(usuario);
         return UsuarioResponseDTO.fromUsuario(usuario);
-    }
-
-    public TokenDTO login(LoginDTO loginDTO)
-    {
-        var userNamePassword = new UsernamePasswordAuthenticationToken(loginDTO.email(),loginDTO.senha());
-        Authentication auth = authenticationManager.authenticate(userNamePassword);
-
-        Object principal = auth.getPrincipal();
-        if(!(principal instanceof Usuario usuario))
-        {
-            throw new AutenticacaoException("Usuário não autenticado");
-        }
-
-        String token = tokenService.createToken(usuario);
-        return new TokenDTO(token);
     }
 
     public UsuarioResponseDTO atualizarAdmin(Long id, UsuarioAdminUpdateDTO usuarioAdminDTO, Usuario usuarioLogado)

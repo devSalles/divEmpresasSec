@@ -3,6 +3,7 @@ package divEmpresas.controller;
 import divEmpresas.dto.security.LoginDTO;
 import divEmpresas.dto.user.*;
 import divEmpresas.entity.Usuario;
+import divEmpresas.service.AuthService;
 import divEmpresas.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class UsuarioController {
 
     private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/salvar-usuario")
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
@@ -28,7 +30,7 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDTO loginDTO)
     {
-        return ResponseEntity.ok(this.userService.login(loginDTO));
+        return ResponseEntity.ok(this.authService.login(loginDTO));
     }
 
     @PutMapping("/atualizar-admin/{id}")
@@ -46,7 +48,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/atualizar-subordinado/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','USER'")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','USER')")
     public ResponseEntity<?> atualizarSubordinado(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateRequestDTO usuarioUpdateDTO, @AuthenticationPrincipal Usuario userLogado)
     {
         return ResponseEntity.ok(this.userService.atualizarUsuario(id,usuarioUpdateDTO,userLogado));
