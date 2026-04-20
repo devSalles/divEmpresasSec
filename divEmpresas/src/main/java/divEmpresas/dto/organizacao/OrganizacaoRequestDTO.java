@@ -15,7 +15,7 @@ public record OrganizacaoRequestDTO(
         String cnpj
 ) {
 
-    public Organizacao toOrganizacao(Usuario usuario)
+    public Organizacao toOrganizacao()
     {
         Organizacao organizacao = new Organizacao();
 

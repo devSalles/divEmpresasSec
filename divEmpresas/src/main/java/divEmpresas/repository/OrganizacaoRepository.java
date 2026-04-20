@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrganizacaoRepository extends JpaRepository<Organizacao,Long > {
+
+    boolean existsByNome(String nome);
+
+    boolean existsByCnpj(String cnpj);
 }
