@@ -58,7 +58,7 @@ public class UsuarioController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> buscarProprioPerfil(@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogado)
     {
-        return ResponseEntity.ok(this.userService.buscarID(id,usuarioLogado.getOrganizacao().getId()));
+        return ResponseEntity.ok(this.userService.buscarPorId(id,usuarioLogado));
     }
 
     @GetMapping("/listar-todos")
