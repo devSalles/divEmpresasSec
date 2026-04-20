@@ -1,6 +1,8 @@
 package divEmpresas.core.infra;
 
 import divEmpresas.core.exceptions.*;
+import divEmpresas.core.exceptions.organizacao.CnpjDuplicadoException;
+import divEmpresas.core.exceptions.organizacao.NomeDuplicadoException;
 import divEmpresas.core.exceptions.security.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +66,17 @@ public class HandlersException {
 
     @ExceptionHandler(ContemSubordinadosException.class)
     public ResponseEntity<MessageRestError> ContemGestorException(ContemSubordinadosException ex)
+    {
+        MessageRestError messageRestError = new MessageRestError(HttpStatus.CONFLICT,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(messageRestError);
+    }
+
+    //-------------- EXCEÇÕES ORGANIZAÇÃO --------------
+    @ExceptionHandler({
+            NomeDuplicadoException.class,
+            CnpjDuplicadoException.class
+    })
+    public ResponseEntity<MessageRestError> handleCnpjAndNomeDuplicado(RuntimeException ex)
     {
         MessageRestError messageRestError = new MessageRestError(HttpStatus.CONFLICT,ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(messageRestError);
